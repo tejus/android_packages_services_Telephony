@@ -76,6 +76,13 @@
             android:targetClass="com.android.settings.Settings$BlacklistSettingsActivity" />
     </PreferenceScreen>
 
+  <ListPreference
+      android:key="button_voice_quality_key"
+      android:title="@string/voice_quality_preferences_title"
+      android:dialogTitle="@string/voice_quality_preferences_title"
+      android:entries="@array/voice_quality_entries"
+      android:entryValues="@array/voice_quality_values"/>
+
     <CheckBoxPreference
         android:key="button_play_dtmf_tone"
         android:title="@string/dtmf_tone_enable_title"

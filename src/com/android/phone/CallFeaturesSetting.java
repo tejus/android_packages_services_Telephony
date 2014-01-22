@@ -191,6 +191,8 @@ public class CallFeaturesSetting extends PreferenceActivity
 
     private static final String BUTTON_CALL_UI_IN_BACKGROUND = "bg_incall_screen";
 
+    static final String BUTTON_VOICE_QUALITY_KEY = "button_voice_quality_key";
+
     private static final String VM_NUMBERS_SHARED_PREFERENCES_NAME = "vm_numbers";
 
     private static final String BUTTON_SIP_CALL_OPTIONS =
@@ -293,6 +295,7 @@ public class CallFeaturesSetting extends PreferenceActivity
     private SipSharedPreferences mSipSharedPreferences;
     private PreferenceScreen mButtonBlacklist;
     private ListPreference mFlipAction;
+    private ListPreference mButtonVoiceQuality;
 
     private class VoiceMailProvider {
         public VoiceMailProvider(String name, Intent intent) {
@@ -626,6 +629,8 @@ public class CallFeaturesSetting extends PreferenceActivity
             Settings.System.putInt(getContentResolver(),
                 Settings.System.CALL_FLIP_ACTION_KEY, index);
             updateFlipActionSummary(index);
+        } else if (preference == mButtonVoiceQuality) {
+            updateVoiceQualitySummary((String) objValue);
         }
         // always let the preference setting proceed.
         return true;
@@ -636,6 +641,20 @@ public class CallFeaturesSetting extends PreferenceActivity
             String[] summaries = getResources().getStringArray(R.array.flip_action_summary_entries);
             mFlipAction.setSummary(getString(R.string.flip_action_summary, summaries[value]));
         }
+    }
+
+    private void updateVoiceQualitySummary(String value) {
+        String[] entries = getResources().getStringArray(R.array.voice_quality_entries);
+        String[] values = getResources().getStringArray(R.array.voice_quality_values);
+        String summary = null;
+
+        for (int i = 0; i < values.length; i++) {
+            if (values[i].equals(value)) {
+                summary = getString(R.string.voice_quality_summary, entries[i]);
+                break;
+            }
+        }
+        mButtonVoiceQuality.setSummary(summary);
     }
 
     @Override
@@ -1581,6 +1600,7 @@ public class CallFeaturesSetting extends PreferenceActivity
         mVoicemailProviders = (ListPreference) findPreference(BUTTON_VOICEMAIL_PROVIDER_KEY);
         mButtonBlacklist = (PreferenceScreen) findPreference(BUTTON_BLACKLIST);
         mFlipAction = (ListPreference) findPreference(FLIP_ACTION_KEY);
+	mButtonVoiceQuality = (ListPreference) findPreference(BUTTON_VOICE_QUALITY_KEY);
 
         if (mVoicemailProviders != null) {
             mVoicemailProviders.setOnPreferenceChangeListener(this);
@@ -1675,6 +1695,14 @@ public class CallFeaturesSetting extends PreferenceActivity
             } else {
                 throw new IllegalStateException("Unexpected phone type: " + phoneType);
             }
+        }
+
+        if (TextUtils.isEmpty(getResources().getString(R.string.voice_quality_param))) {
+            prefSet.removePreference(mButtonVoiceQuality);
+            mButtonVoiceQuality = null;
+        }
+        if (mButtonVoiceQuality != null) {
+            mButtonVoiceQuality.setOnPreferenceChangeListener(this);
         }
 
         // create intent to bring up contact list
@@ -1882,6 +1910,10 @@ public class CallFeaturesSetting extends PreferenceActivity
                     Settings.System.CALL_FLIP_ACTION_KEY, 2);
             mFlipAction.setValue(String.valueOf(flipAction));
             updateFlipActionSummary(flipAction);
+        }
+
+        if (mButtonVoiceQuality != null) {
+            updateVoiceQualitySummary(mButtonVoiceQuality.getValue());
         }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(
